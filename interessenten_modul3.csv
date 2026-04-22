@@ -1,0 +1,101 @@
+firstname;lastname;phone;ou;street;city;city_code;postalcode;kurs;status_id_fk
+Rotraud;Klemm;01675 49961;IT14B;Gino-Hoffmann-Straße 81;Oranienburg;OR;30684;IT14B;3
+Zenon;Bähr;+49(0)4650 64899;IT15B;Fredi-Hahn-Straße 5076;Burg;BU;93324;IT15B;2
+Aleksander;Austermühle;08750 81694;IT15A;Kühnertstr. 5-9;Mellrichstadt;ME;67193;IT15A;2
+Fredo;Bonbach;+49(0)9068 766055;BuHa13A;Jolanda-Scheel-Ring 9/9;Schrobenhausen;SC;08583;BuHa13A;3
+Adina;Davids;(06960) 783080;IT14A;Schülergasse 32/73;Lüneburg;LÜ;83987;IT14A;3
+Karl-Heinz;Freudenberger;(07268) 555361;IT14A;Finkestr. 612;Mellrichstadt;ME;92688;IT14A;1
+Cengiz;Mosemann;06552066535;BuHa13B;Pohlplatz 4-6;Wismar;WI;52898;BuHa13B;3
+Andrei;Fechner;+49(0) 998542836;IT14A;Döhnweg 88;Uffenheim;UF;73921;IT14A;2
+Hans-H.;Briemer;08674 45693;IT15B;Scholtzgasse 97-44;Eisenhüttenstadt;EI;37556;IT15B;2
+Marku5;Juncken;+49(0)9026 358920;IT15B;Bernt-Nette-Platz 679;Bamberg;BA;63398;IT15B;1
+Hermine;Renner;(09980) 51219;IT15A;Birgitt-Seifert-Gasse 4612;Goslar;GO;03121;IT15A;3
+Blanka;Gieß;+49(0)9809142429;IT15B;Annamaria-Pechel-Weg 71/42;Soltau;SO;05552;IT15B;2
+Cetin;Gutknecht;+49(0)9505 387844;BuHa12A;Drubinallee 9/8;Norden;NO;58717;BuHa12A;1
+Aynur;Bärer;(09628) 938472;BuHa12A;Alois-Pohl-Allee 6;Hansestadttralsund;HA;06601;BuHa12A;2
+Hanna;Mitschke;0776880492;BuHa12B;Alf-Drubin-Ring 51-36;Hofgeismar;HO;79686;BuHa12B;2
+Anne-Kathrin;Girschner;+49(0) 472525925;IT15B;Ilka-Briemer-Allee 2-9;Erfurt;ER;1234;IT15B;2
+Meral;Römer;0500351209;BuHa13B;Steinberggasse 90-61;Ingolstadt;IN;63624;BuHa13B;2
+Elmar;Zobel;02915399848;IT14A;Steinbergstr. 879;Finsterwalde;FI;93396;IT14A;3
+Sieghard;Franke;(09846) 381912;BuHa12A;Gehringergasse 7/2;Coburg;CO;03652;BuHa12A;1
+Hermann-Josef;Klemm;05124 564712;BuHa13B;Mirella-Scheel-Gasse 9/8;Prenzlau;PR;01430;BuHa13B;2
+Ruben;Kraus;02460575771;BuHa13A;Gehringerallee 2-5;Neubrandenburg;NE;54045;BuHa13A;2
+Marco;Dippel;0936347534;IT15A;Annegrete-Radisch-Straße 15/82;Feuchtwangen;FE;44142;IT15A;1
+Johannes;Roskoth;+49(0)4883 79771;IT15B;Ingbert-Gotthard-Straße 6;Strasburg;ST;77345;IT15B;2
+Helene;Söding;+49 (0) 4411 244721;IT14A;Dörte-Otto-Platz 1/8;Stuttgart;ST;72653;IT14A;1
+Kirstin;Barkholz;+49 (0) 1791 994237;BuHa13B;Bozena-Seip-Ring 47;Wanzleben;WA;85217;BuHa13B;1
+Karlheinz;Röhricht;+49(0)4496 74359;BuHa13B;Margaretha-Wagenknecht-Weg 41;Sulzbach-Rosenberg;SU;41278;BuHa13B;3
+Waltraud;Schmidt;+49(0) 925576059;BuHa12B;Budiggasse 9/8;H@mburg!;MA;89903;BuHa12B;3
+Ditmar;Knappe;0288070082;BuHa13B;Zoltan-Rosenow-Allee 33;Günzburg;GÜ;12269;BuHa13B;1
+Thorsten;Blümel;+49(0)1303333394;BuHa13B;Betty-Stroh-Allee 5/6;Aschaffenburg;AS;92731;BuHa13B;1
+Hedi;Dippel;09300205138;BuHa12A;Yasmin-Butte-Ring 5-5;Borken;BO;50641;BuHa12A;1
+Rotraut;Junken;+49(0)6095 460802;IT15B;Heino-Schomber-Platz 16;Melsungen;ME;32615;IT15B;1
+Heinfried;Koch II;+49(0) 475750147;BuHa12A;Frankestraße 28;Tuttlingen;TU;37583;BuHa12A;1
+Susan;Schlosser;09155 17093;BuHa13A;Striebitzallee 79-49;Bitterfeld;BI;03721;BuHa13A;3
+Nurettin;Sorgatz;+49 (0) 5346 732397;BuHa13A;Heuserstraße 8;Altentreptow;AL;63458;BuHa13A;3
+Wilfried;Roskoth;+49(0)1304 140583;IT15A;Scholtzplatz 2-2;Schrobenhausen;SC;95433;IT15A;2
+Janine;Neureuther;(06915) 98048;IT14A;Schäferring 7451;Fürstenwalde;FÜ;90828;IT14A;1
+Hans-Hermann;Heintze;+49(0)1163 68295;BuHa12B;Kreingasse 7664;Sankt Goarshausen;SA;66545;BuHa12B;1
+Mandy;Wagner;+49(0)0959 87917;BuHa12B;Häringring 98-35;Genthin;GE;23479;BuHa12B;3
+Nicolas;Löchel;+49(0)4826 49199;BuHa13A;Ferdi-Hauffer-Straße 73/66;Helmstedt;HE;91857;BuHa13A;1
+Thorsten;Dehmel;(08808) 368642;IT14A;Kallertstr. 46/55;Hannoversch Münden;HA;70662;IT14A;3
+Donaudampfschifffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft;Warmer;0874884250;IT14B;Paolo-Kraushaar-Platz 38-62;Pirmasens;PI;94693;IT14B;3
+Karl-Heinrich;Dippel;+49(0)7489 690100;IT15A;Angelo-Caspar-Platz 89-84;Bamberg;BA;14520;IT15A;3
+Leokadia;Fiebig;0730716852;IT15B;Tschentscherring 6-7;Mellrichstadt;ME;58897;IT15B;1
+Engin;Schleich;08063 25593;;Irmhild-Geisel-Ring 8015;Hettstedt;HE;25379;;2
+Edmund;Ullrich;+49 (0) 7592 851626;BuHa12A;Sybille-Spieß-Platz 941;Fulda;FU;66556;BuHa12A;1
+Ricardo;Wirth;(03274) 23455;BuHa13A;Eckbauerallee 45/45;Zschopau;ZS;46753;BuHa13A;3
+Ottomar;Hermighausen;0603835719;BuHa13A;Fabienne-Drewes-Platz 5;Mainburg;MA;85247;BuHa13A;3
+Gabriella;Preiß;0838572758;BuHa12A;Ralf-Dieter-Misicher-Gasse 8/3;Moers;MO;83521;BuHa12A;3
+Britta;Gnatz;(01569) 81120;BuHa12A;Agathe-Jacobi Jäckel-Straße 70-79;Stuttgart;ST;49853;BuHa12A;2
+Lukas;Kallert;(06968) 484520;BuHa12B;Anna-Lena-Heidrich-Gasse 148;Stade;ST;97647;BuHa12B;2
+Gerwin;Schuchhardt;09255977336;IT14A;Gumprichstr. 6747;Schlüchtern;SC;35044;IT14A;3
+Angelika;Bien;+49 (0) 1021 255690;BuHa12A;Anneke-Juncken-Ring 147;Tuttlingen;TU;03335;BuHa12A;3
+Susanna;Gertz;09443 139425;BuHa12B;Kallertstraße 1543;Neubrandenburg;NE;43062;BuHa12B;3
+Aysel;Staude;(07741) 366113;BuHa12B;Wirthweg 88;Hofgeismar;HO;11711;BuHa12B;2
+Dominic;Bachmann;+49(0)6359153762;;Paul-Gerhard-Stiffel-Gasse 36/58;Lörrach;LÖ;82316;;1
+Kathi;Rogge;09598 131783;BuHa13A;Alwine-Täsche-Gasse 853;Hildburghausen;HI;63299;BuHa13A;2
+Bernhard;Steinberg;(02597) 035970;BuHa12B;Elias-Huhn-Platz 9;Cuxhaven;CU;37699;BuHa12B;1
+Ekkehart;Linke;+49(0) 156763028;IT15B;Wähnerring 1;Helmstedt;HE;25202;IT15B;1
+Nadeschda;Kallert;(03423) 43425;BuHa12A;Haaseplatz 61;Bamberg;BA;06120;BuHa12A;2
+Deborah;Klotz;09201 002342;IT15A;Weißring 2;Großenhain;GR;10586;IT15A;1
+Petar;Schomber;07571889327;BuHa12A;Köhlergasse 946;Regensburg;RE;14985;BuHa12A;2
+Birgitt;Hentschel;+49(0) 780894445;IT14A;Conradiring 169;Ansbach;AN;27477;IT14A;3
+Jorge;Martin;+49 (0) 4093 555421;IT15B;Lina-Fechner-Allee 6/6;Aachen;AA;48747;IT15B;2
+Christin;Buchholz;+49 (0) 5724 812605;IT14A;Pirmin-Wirth-Gasse 61;Meiningen;ME;54918;IT14A;1
+Bastian;Klotz;(06275) 994793;IT15B;Netteweg 4-4;Soest;SO;95992;IT15B;1
+Edelbert;Bolander;(09521) 08080;BuHa13A;Schusterweg 27;Bad Liebenwerda;BA;97990;BuHa13A;2
+Henrik;Kostolzin;+49 (0) 123-HELP-ME;IT15B;Möchlichenstraße 17;Grimma;GR;67694;IT15B;2
+Stephan;Koch II;+49(0)6614 881701;IT14A;Friedrich-Stiffel-Allee 6-6;Neustadt am Rübenberge;NE;22786;IT14A;2
+Ernst;Oestrovsky;+49(0)8994 940379;BuHa12A;Mechtild-Loos-Ring 36-25;Bischofswerda;BI;64489;BuHa12A;3
+Wilhelmine;Bachmann;+49(0)8374 108872;BuHa13B;Stahrstr. 8-8;Waldmünchen;WA;64385;BuHa13B;1
+Rene;Weiß;(03594) 15902;IT15B;Barthplatz 2279;Wittmund;WI;43653;IT15B;3
+Helen;Bachmann;+49(0) 425190089;BuHa12B;Hans-Rose-Platz 23/81;Hohenmölsen;HO;22026;BuHa12B;2
+Amalie;Beer;09489 526194;BuHa13A;Täschestraße 55/39;Grimmen;GR;69915;BuHa13A;1
+Patrick;Keudel;(00835) 76301;BuHa12A;Petar-Naser-Straße 20-47;Zeulenroda;ZE;03684;BuHa12A;2
+Silva;Martin;05017 245973;BuHa13A;Kallertring 98/81;Bitterfeld;BI;64247;BuHa13A;1
+Konstantinos;Jäntsch;+49 (0) 2934 860402;BuHa12A;Andreas-Mitschke-Ring 9769;Pegnitz;PE;24178;BuHa12A;2
+Kunigunde;Jüttner;04184074003;IT14A;Irmgard-Segebahn-Allee 1138;Bergzabern;BE;59935;IT14A;1
+Aleksandar;Gnatz;01634 64434;Tragen wir später ein;Blümelplatz 7-6;Schwarzenberg;SC;50681;IT15A;2
+Gotthard;Hauffer;+49 (0) 5852 439521;BuHa13A;Gitte-Meyer-Gasse 9477;Kleve;KL;30961;BuHa13A;1
+Klaus-Günter;Hering;05886197257;IT14A;Greta-Meister-Straße 63/62;Meppen;ME;32859;IT14A;3
+Christos;Jessel;(05726) 161508;IT15A;Undine-Bruder-Weg 83-88;Senftenberg;SE;98543;IT15A;3
+Fredo;Klemt;(00360) 61599;BuHa12A;Gunpfgasse 931;Schwerin;SC;14140;BuHa12A;2
+Kamil;Schüler;+49(0)6425 47113;BuHa13B;Lachmanngasse 87-50;Wismar;WI;60709;BuHa13B;1
+Diethard;Schüler;0263635375;BuHa13A;Ildiko-Kranz-Straße 16-36;Gütersloh;GÜ;00846;BuHa13A;2
+Martha;Preiß;+49(0)1651 785944;BuHa13B;Kargeallee 7642;Geldern;GE;74104;BuHa13B;3
+Birte;Bachmann;+49(0)8795161307;IT15A;Gustav-Klemt-Straße 20-16;Parchim;PA;49222;IT15A;2
+Alf;Dietz;0915277969;IT14A;Truppring 373;Bergzabern;BE;29789;IT14A;2
+Dana;Hertrampf;+49 (0) 3795 935042;BuHa12A;Songül-Meister-Straße 30;Bruchsal;BR;99186;BuHa12A;2
+Hanspeter;Römer;+49 (0) 4675 407936;IT15A;Danny-Jäntsch-Ring 147;Recklinghausen;RE;17818;IT15A;3
+Lambert;Hübel;+49 (0) 5914 319080;BuHa13B;Pölitzplatz 652;Niesky;NI;55946;BuHa13B;3
+Bernd-Dieter;Krein;04257 537672;BuHa12A;Gesine-Seifert-Gasse 8605;Freudenstadt;FR;94840;BuHa12A;3
+Gundel;Roskoth;+49(0)0901 59068;IT15A;Doris-Thies-Allee 1/9;Wertingen;WE;49695;IT15A;1
+Leif;Finke;(05156) 066993;IT14A;Karl-Hermann-Jacob-Platz 5-5;Pirmasens;PI;88231;IT14A;3
+Kemal;Walter;+49(0)0937 58125;BuHa12A;Fatima-Förster-Allee 2-1;Husum;HU;34604;BuHa12A;2
+Pauline;Trupp;0537209071;BuHa12B;Erol-Börner-Gasse 169;Sankt Goarshausen;SA;34025;BuHa12B;1
+Alwin;Schmidt;(00616) 09530;IT14A;Gotthardstr. 67/77;Hofgeismar;HO;19943;IT14A;1
+Hellmuth;Thies;+49(0)8012 364424;BuHa13B;Gaby-Weiß-Weg 98/59;Badalzungen;BA;08916;BuHa13B;1
+Lars;Schwital;08786452869;IT15A;Friedo-Steckel-Gasse 7-1;Gießen;GI;45942;IT15A;2
+Irma;Scholl;(05961) 099148;BuHa13B;Erdmute-Scholtz-Weg 44-49;Arnstadt;AR;38322;BuHa13B;2
+Erdal;Juncken;+49(0)4184818647;IT14A;Dippelstr. 51;Husum;HU;53167;IT14A;1
