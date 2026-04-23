@@ -2,35 +2,26 @@ import sys
 import os
 from tkinter import dialog
 import mysql.connector 
+import csv
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import (
-    QApplication, QDialog, QLineEdit, QMainWindow, QPushButton, QDockWidget, QToolBar,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QMessageBox, QGridLayout, QLabel, QLineEdit, QComboBox
+    QApplication, QDialog, QFileDialog, QLineEdit, QMainWindow, QPushButton, QDockWidget, QToolBar,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QMessageBox, QGridLayout, QLabel, QLineEdit, QComboBox, QTableWidget, QAbstractItemView
 )
 # TODO: Die Klasse EditADUserWindow muss in editaduser_TN.py vervollständigt werden.
 from editaduser_TN import EditADUserWindow
 
-DB_CONFIGS = {
-    "Test": {
-        "host": "localhost",
-        "database": "AD"
-    },
-    "Produktion": {
-        "host": "localhost",
-        "database": "AD"
-    }
-}
+
 #Einfügen Login FEnster
 class LoginDialog(QDialog):
-    def __init__(self, db_configs, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
     
         self.setWindowTitle("Login")
         self.setModal(True)
     
-        self.db_configs = db_configs
     
         layout = QGridLayout()
         self.setLayout(layout)
@@ -44,31 +35,36 @@ class LoginDialog(QDialog):
         self.input_pass = QLineEdit()
         self.input_pass.setEchoMode(QLineEdit.EchoMode.Password)
     
-        #Datbase ComboBox
-        self.label_db = QLabel("Datenbank:")
-        self.combo_db = QComboBox()
-        self.combo_db.addItems(self.db_configs.keys())
+        #Host
+        self.label_host = QLabel("Host:")
+        self.input_host = QLineEdit()
+
+        #Database
+        self.label_db = QLabel("Database:")
+        self.input_db = QLineEdit()
+
     
         #Buttons
         self.btn_ok = QPushButton("OK")
         self.btn_cancel = QPushButton("Abbrechen")
     
-        #Buttons
-        self.btn_ok = QPushButton("OK")
-        self.btn_cancel = QPushButton("Abbrechen")
+        
     
         #Layout
-        layout.addWidget(self.label_user, 0, 0)
-        layout.addWidget(self.input_user, 0, 1)
+        layout.addWidget(self.label_host, 0, 0)
+        layout.addWidget(self.input_host, 0, 1)
     
-        layout.addWidget(self.label_pass, 1, 0)
-        layout.addWidget(self.input_pass, 1, 1)
+        layout.addWidget(self.label_db, 1, 0)
+        layout.addWidget(self.input_db, 1, 1)
     
-        layout.addWidget(self.label_db, 2, 0)
-        layout.addWidget(self.combo_db, 2, 1)
+        layout.addWidget(self.label_user, 2, 0)
+        layout.addWidget(self.input_user, 2, 1)
     
-        layout.addWidget(self.btn_ok, 3, 0)
-        layout.addWidget(self.btn_cancel, 3, 1)
+        layout.addWidget(self.label_pass, 3, 0)
+        layout.addWidget(self.input_pass, 3, 1)
+
+        layout.addWidget(self.btn_ok, 4, 0)
+        layout.addWidget(self.btn_cancel, 4, 1)
     
         # Buttons logic
         self.btn_ok.clicked.connect(self.handle_login)
@@ -76,14 +72,17 @@ class LoginDialog(QDialog):
 
     #Liest Login-Daten aus den Eingabefeldern und schließt das Fenster mit OK.
     def handle_login(self):
+        host = self.input_host.text()
+        database = self.input_db.text()
         username = self.input_user.text()
         password = self.input_pass.text()
-        db_name = self.combo_db.currentText()
+        
         #Dieser Block speichert die Benutzereingaben im Anmeldefensterobjekt.
         self.login_data ={
+            "host": host,
+            "database": database,
             "username": username,
             "password": password,
-            "database": db_name
         }
         
         self.accept()
@@ -151,12 +150,35 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         central_layout = QVBoxLayout(central_widget)
 
+        self.filter_input = QLineEdit()
+        self.filter_input.setPlaceholderText("Benutzer suchen...")
+
+        #Bei Texteingabe Tabelle filtern
+        self.filter_input.textChanged.connect(self.filter_ad_users)
+        # Filterfeld ins Layout einfügen
+        central_layout.addWidget(self.filter_input)
+
+
         self.table_interessenten = QTableWidget()
+        self.table_interessenten.setColumnCount(5)
+        self.table_interessenten.setHorizontalHeaderLabels([
+            "ID",
+            "Vorname",
+            "Benutzername",
+            "E-Mail",
+            "Status"
+        ])
+        # Zeilennummern (linke Spalte) ausblenden
+        self.table_interessenten.verticalHeader().setVisible(False)
         # Auswahlverhalten gemäß US 3.1 
         self.table_interessenten.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table_interessenten.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
-        self.table_interessenten.doubleClicked.connect(self.editaduser) # [cite: 49]
-        
+        self.table_interessenten.doubleClicked.connect(self.editaduser) 
+        self.table_interessenten.horizontalHeader().setStretchLastSection(True) # Letzte Spalte der Tabelle automatisch strecken
+        self.table_interessenten.resizeColumnsToContents() # Spaltenbreite automatisch an Inhalt anpassen
+
+
+
         central_layout.addWidget(self.table_interessenten)
         self.resize(1000, 600)
         self.show()
@@ -173,6 +195,7 @@ class MainWindow(QMainWindow):
         if command_id == 13: self.db_login() 
         elif command_id == 11: self.csv_import_with_validation() 
         elif command_id == 21: self.editaduser() 
+        elif command_id == 22: self.delete_ad_user()
         elif command_id == 14: self.db_logout()
 
     def db_logout(self): #Diese Methode schließt die Verbindung zur Datenbank und setzt self.db_connection auf None zurück.
@@ -188,17 +211,17 @@ class MainWindow(QMainWindow):
 
 #Einlogen zeigt
     def db_login(self):
-        dialog = LoginDialog(DB_CONFIGS, self)
+        dialog = LoginDialog(self)
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             login_data = dialog.login_data
 
             try:
                 self.db_connection = mysql.connector.connect(
-                host="10.5.0.35",
+                host=login_data["host"],
                 user=login_data["username"],
                 password=login_data["password"],
-                database="AD",
+                database=login_data["database"],
                 port=3306
             )
 
@@ -225,28 +248,249 @@ class MainWindow(QMainWindow):
  
         for row_index, row_data in enumerate(rows): #jede Zeile aus der Datenbank.
             for col_index, value in enumerate(row_data): #für jede Zelle innerhalb der Zeile.
-                self.table_interessenten-setItem(
+                self.table_interessenten.setItem(
                     row_index,
                     col_index,
                     QTableWidgetItem(str(value)) #Wert in eine bestimmte Tabellenzelle einfügen.
                 )
+        self.table_interessenten.resizeColumnsToContents()
         cursor.close()
+
+    def filter_ad_users(self):
+        filter_text = self.filter_input.text().lower().strip()
+        
+        for row in range(self.table_interessenten.rowCount()):
+            row_matches = False
+
+            for col in range(self.table_interessenten.columnCount()):
+                item = self.table_interessenten.item(row, col)
+                if item is not  None and filter_text in item.text().lower():
+                    row_matches = True
+                    break
+            
+            self.table_interessenten.setRowHidden(row, not row_matches)
+
+
+    # Eine CSV-Zeile auslesen und die Felder für weitere Verarbeitung vorbereiten   
+    def process_csv_row(self, row, line_number, source_file):
+        firstname = row.get("firstname", "").strip()
+        lastname = row.get("lastname", "").strip()
+        phone = row.get("phone", "").strip()
+        ou = row.get("ou", "").strip()
+        street = row.get("street", "").strip()
+        city = row.get("city", "").strip()
+        city_code = row.get("city_code", "").strip()
+        postalcode = row.get("postalcode", "").strip()
+        kurs = row.get("kurs", "").strip()
+        status_id_fk = row.get("status_id_fk", "").strip()
+
+        return {
+            "firstname": firstname,
+            "lastname": lastname,
+            "phone": phone,
+            "ou": ou,
+            "street": street,
+            "city": city,
+            "city_code": city_code,
+            "postalcode": postalcode,
+            "kurs": kurs,
+            "status_id_fk": status_id_fk,
+            "line_number": line_number,
+            "source_file": source_file
+        }
+    # Username aus Vorname und Nachname generieren (Format: firstname.lastname)
+    def generate_username(self,firstname, lastname):
+        # Leerzeichen entfernen und alles in Kleinbuchstaben umwandeln
+        firstname = firstname.strip().lower()
+        lastname = lastname.strip().lower()
+
+        username = f"{firstname}.{lastname}"
+        # Username auf maximale Länge kürzen
+        username = username[:20]
+        return username
+        
+     # E-Mail aus Vorname, Nachname und Standort generieren   
+    def generate_email(self, firstname, lastname, location):
+        # Leerzeichen entfernen und alles in Kleinbuchstaben umwandeln
+        firstname = firstname.strip().lower()
+        lastname = lastname.strip().lower()
+        location = location.strip().lower()
+        # Lokalen Teil der E-Mail erstellen (vorname.nachname)
+        local_part = f"{firstname}.{lastname}"
+        # Domain abhängig vom Standort festlegen
+        if location == "berlin":
+            domain = "@company-berlin.de"
+        else:
+            domain = "@company.de"
+        # Vollständige E-Mail zurückgeben
+        return local_part + domain
+    
+    #Prüfen, ob Benutzer bereits in der Datenbank existiert
+    def user_exists(self, username):
+        # Datenbankabfrage zur Überprüfung, ob Username bereits existiert
+        cursor = self.db_connection.cursor()
+        cursor.execute(
+            "SELECT username FROM aduser WHERE username = %s",
+            (username,)
+        )
+        result = cursor.fetchone()
+        cursor.close()
+        # True zurückgeben, wenn Benutzer gefunden wurde, sonst False
+        return result is not None
+
+    # Neuen Benutzer in die Datenbank einfügen
+    def insert_user(self, data):
+        cursor = self.db_connection.cursor()
+        # SQL-Insert-Befehl zum Speichern eines neuen Benutzers
+        cursor.execute("""
+            INSERT INTO aduser 
+            (username, firstname, lastname, email, phone, ou, street, city, postalcode)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            data["username"][:20],
+            data["firstname"][:20],
+            data["lastname"][:20],
+            data["email"][:50],
+            data["phone"][:20],
+            data["ou"][:20],
+            data["street"][:50],
+            data["city"][:30],
+            data["postalcode"][:10]
+        ))
+        # Änderungen in der Datenbank speichern (commit)
+        self.db_connection.commit()
+        cursor.close()
+
+        # Vorhandenen Benutzer in der Datenbank aktualisieren
+    def update_user(self, data):
+        cursor = self.db_connection.cursor()
+
+        # SQL-Update-Befehl zum Aktualisieren eines vorhandenen Benutzers
+        cursor.execute("""
+            UPDATE aduser
+            SET firstname = %s,
+            lastname = %s,
+            email = %s,
+            phone = %s,
+            ou = %s,
+            street = %s,
+            city = %s,
+            postalcode = %s
+            WHERE username = %s
+        """, (
+            data["firstname"][:20],
+            data["lastname"][:20],
+            data["email"][:50],
+            data["phone"][:20],
+            data["ou"][:20],
+            data["street"][:50],
+            data["city"][:30],
+            data["postalcode"][:10],
+            data["username"][:20]
+        ))
+
+        # Änderungen in der Datenbank speichern (commit)
+        self.db_connection.commit()
+        cursor.close()
+                           
+                           
+
+
 
     def csv_import_with_validation(self):
         """
         TODO: CSV einlesen, Daten validieren (US 7) und in DB schreiben.
         Fehlerhafte Zeilen müssen in die Tabelle 'import_errors'.
         """
-        pass
+        if self.db_connection is None:
+            QMessageBox.warning(self, "Fehler", "Bitte zuerst einloggen")
+            return
+            
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "CSV-Datei auswählen",
+            "",
+            "CSV Files (*.csv)"
+        )
+        
+        if not file_path:
+            return
+        # CSV-Datei einlesen und Zeilen als Dictionaries für weitere Verarbeitung speichern
+        try:
+            with open(file_path, newline='', encoding='utf-8-sig') as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=";")
 
-    def editaduser(self):
-        """Ruft das Bearbeitungsfenster auf """
-        selection = self.table_interessenten.selectedItems()
+                rows = list(reader)  
+
+                
+
+                print("Anzahl Zeigen:", len(rows))
+                #Zähler für neue und bereits vorhandene Datensätze vorbereiten
+                new_count = 0
+                existing_count = 0
+
+                for index, row in enumerate(rows, start=1):
+                    processed_row = self.process_csv_row(row, index, file_path)
+                    # Username für jeden Datensatz generieren
+                    username = self.generate_username(
+                        processed_row["firstname"],
+                        processed_row["lastname"]
+                    )
+
+                    # Username dem Datensatz hinzufügen
+                    processed_row["username"] = username
+
+                    # E-Mail für jeden Datensatz generieren
+                    email = self.generate_email(
+                        processed_row["firstname"],
+                        processed_row["lastname"],
+                        processed_row["city"]
+                    )
+                    # E-Mail dem Datensatz hinzufügen
+                    processed_row["email"] = email
+                    # Prüfen, ob der Benutzer bereits in der Datenbank existiert
+                    if self.user_exists(processed_row["username"]):
+                        processed_row["db_action"] = "update"
+                        existing_count +=1
+                        self.update_user(processed_row) # Vorhandenen Benutzer aktualisieren
+                    else:
+                        processed_row["db_action"] = "insert"
+                        new_count +=1
+                        # Neuen Benutzer in die Datenbank einfügen
+                        self.insert_user(processed_row)
+
+
+                    # Ergebnis zur Kontrolle ausgeben
+                    print(processed_row)
+
+                print("Neue Datensätze:", new_count)
+                print("Vorhandene Datensätze:", existing_count)
+                self.load_ad_users()
+                QMessageBox.information(
+                    self,
+                    "Import erfolgreich",
+                    f"Neu importiert: {new_count}\nAktualisiert: {existing_count} "
+                )
+
+
+
+        except Exception as e:
+            QMessageBox.critical(self, "Fehler", str(e))
+
+        print(file_path)
+
+
+    def editaduser(self): 
+        """Ruft das Bearbeitungsfenster auf """ 
+        selection = self.table_interessenten.selectedItems() # Ausgewählte Zeile ermitteln
+        # Prüfen, ob eine Zeile ausgewählt ist
         if selection:
             row = selection[0].row()
+            # Benutzer-ID aus der ersten Spalte holen
             userid = self.table_interessenten.item(row, 0).text()
-            # EditADUserWindow muss in editaduser_TN.py definiert werden.
-            self.edit_win = EditADUserWindow("Benutzer bearbeiten", userid)
+            
+            # Bearbeitungsfenster öffnen
+            self.edit_win = EditADUserWindow("Benutzer bearbeiten", userid, self.db_connection, self)
             self.edit_win.show()
         else:
             QMessageBox.warning(self, "Fehler", "Bitte wählen Sie einen User aus!")
