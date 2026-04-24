@@ -1,8 +1,11 @@
+from fileinput import filename
 import sys
 import os
 from tkinter import dialog
 import mysql.connector 
 import csv
+import json
+import shutil #Datei kopieren
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QAction
@@ -10,6 +13,7 @@ from PyQt6.QtWidgets import (
     QApplication, QDialog, QFileDialog, QLineEdit, QMainWindow, QPushButton, QDockWidget, QToolBar,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QMessageBox, QGridLayout, QLabel, QLineEdit, QComboBox, QTableWidget, QAbstractItemView
 )
+from datetime import datetime
 # TODO: Die Klasse EditADUserWindow muss in editaduser_TN.py vervollständigt werden.
 from editaduser_TN import EditADUserWindow
 
@@ -192,11 +196,13 @@ class MainWindow(QMainWindow):
         
         
         # Beispielhafter Einstieg::
-        if command_id == 13: self.db_login() 
-        elif command_id == 11: self.csv_import_with_validation() 
-        elif command_id == 21: self.editaduser() 
-        elif command_id == 22: self.delete_ad_user()
-        elif command_id == 14: self.db_logout()
+        if command_id == 13: self.db_login()  # Menüpunkt: Login zur Datenbank
+        elif command_id == 11: self.csv_import_with_validation() # Menüpunkt: CSV-Datei importieren und in DB speichern
+        elif command_id == 12: self.transfer_to_ad() # Menüpunkt: Daten für AD-Transfer vorbereiten
+        elif command_id == 21: self.editaduser()  # Menüpunkt: ausgewählten Benutzer bearbeiten
+        elif command_id == 22: self.delete_ad_user() # Menüpunkt: ausgewählten Benutzer löschen
+        elif command_id ==23: self.deactivate_ad_user() # Menüpunkt: ausgewählten AD-Benutzer deaktivieren
+        elif command_id == 14: self.db_logout() # Menüpunkt: Logout (Verbindung schließen)
 
     def db_logout(self): #Diese Methode schließt die Verbindung zur Datenbank und setzt self.db_connection auf None zurück.
         if self.db_connection is not None:
@@ -494,6 +500,184 @@ class MainWindow(QMainWindow):
             self.edit_win.show()
         else:
             QMessageBox.warning(self, "Fehler", "Bitte wählen Sie einen User aus!")
+
+    #Löscht den ausgewählten Benutzer aus der Datenbank
+    def delete_ad_user(self):
+        # Prüfen, ob ein Benutzer ausgewählt ist
+        selection = self.table_interessenten.selectedItems()
+        if not selection:
+            QMessageBox.warning(self, "Fehler", "Bitte wöhlen Sie einen User aus!")
+            return
+        
+        #ID aus erster Spalte holen
+        row = selection[0].row()
+        userid = self.table_interessenten.item(row, 0).text()        
+
+        #Sicherhetsabfrage
+        antwort = QMessageBox.question(
+            self,
+            "Bestätigung",
+            "Benutzer wirklich löschen?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        #Wenn bestätigt> löschen
+        if antwort == QMessageBox.StandardButton.Yes:
+            try:
+                cursor = self.db_connection.cursor()
+
+                #WICHTIG: id_pk verwenden
+                cursor.execute(
+                    "DELETE FROM aduser WHERE id_pk = %s",
+                    (int(userid),)
+                )
+
+                self.db_connection.commit()
+                cursor.close()
+
+                QMessageBox.information(self, "Erfolg", "Benutzer gelöscht")
+
+                #Tabelle neu Laden
+
+                self.load_ad_users()
+
+            except Exception as e:
+                QMessageBox.critical(self, "Fehler", str(e))
+
+
+    def deactivate_ad_user(self):
+        """Deaktiviert den ausgewöhlten Benutzer (Status ändern)."""
+        #Prüfen, ob ein Benutzer ausgewählt ist
+        selection = self.table_interessenten.selectedItems()
+        if not selection:
+            QMessageBox.warning(self, "Fehler", "Bitte wählen Sie einen User aus!")
+            return
+        #ID aus der ersten Spalte holen
+        row = selection[0].row()
+        userid = self.table_interessenten.item (row, 0).text()
+
+        #Sicherheitsabfrage
+        antwort = QMessageBox.question(
+            self,
+            "Bestätigung",
+            "Benutzer wirklich deaktivieren?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        if antwort == QMessageBox.StandardButton.Yes:
+            try:
+                cursor = self.db_connection.cursor()
+
+
+                #Status auf "inaktiv" setzen (status_id_fk = 0)
+                cursor.execute(
+                    "UPDATE aduser SET status_id_fk = 2 WHERE id_pk = %s",
+                    (int(userid),)
+                )
+                
+                self.db_connection.commit()
+                cursor.close()
+
+                QMessageBox.information(self, "Erfolg", "Benutzer deaktiviert")
+
+                #Tabelle neu laden
+                self.load_ad_users()
+
+            except Exception as e:
+                QMessageBox.critical(self, "Fehler", str(e))
+
+    def transfer_to_ad(self):
+        """Startet den Transfer zur AD"""
+        # Prüfen, ob Verbindung zur Datenbank besteht
+        if self.db_connection is None:
+            QMessageBox.warning(self, "Fehler", "Bitte zuerst einloggen")
+            return
+        
+        #Benutzer für Transfer laden
+        users = self.get_all_ad_users_for_transfer()
+
+        #Prüfen, ob Benutzer vorhanden sind
+        if not users:
+            QMessageBox.warning(self, "Fehler", "Keine Benutzer für den Tansfer gefunden")
+            return
+        
+        #Expoer-Ordner festlegen/ определяем папку для экспорта
+        export_folder = "exports"
+        #Export-Ordner erstellem, falls er nicht existiert/ создаем папку если ее нет
+        os.makedirs(export_folder, exist_ok=True)
+
+        #Dateiname mit Zeitstemperl erstellen / Создаем имя файла
+        filename = f"transfer_ad_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+        #Vollstädigen Dateipfad erstellen / полный путь к файлу
+        local_file = os.path.join(export_folder, filename)
+        
+
+        #Daten in JSON-Datei schreiben/ запись в джейсон в папку експортс
+        with open(local_file, "w", encoding="utf-8") as file:
+            json.dump(users, file, ensure_ascii=False, indent=4)
+
+        network_folder = "network_test" #Netzwerkpfad (Test)/ тестовая папка
+        os.makedirs(network_folder, exist_ok=True)  # Ordner erstellen / создать папку
+        network_file = os.path.join(network_folder, filename) #Zielpfad
+        shutil.copy2(local_file, network_file) # Datei kopiert    
+    
+        #Erfolgsmeldung anzeigen
+        QMessageBox.information(
+            self,
+            "Erfolg",
+            f"{len(users)} Benutzer exportiert.\nDatei erstellt:\n{local_file}\nKopiert nach:\n{network_file}"
+        )
+
+        
+        
+
+    def get_all_ad_users_for_transfer(self):
+        """Ladt alle Benutzer für den AD-Transfer aus der DB"""
+
+        try:
+            cursor = self.db_connection.cursor()
+            #Benötige Felder für PowerShell-Transfer laden
+            cursor.execute("""
+                SELECT
+                    username,
+                    firstname,
+                    lastname,
+                    street,
+                    postalcode,
+                    city,
+                    phone,
+                    email,
+                    ou
+                FROM aduser
+            """)
+            rows = cursor.fetchall()
+
+            users = []
+
+            for row in rows:
+                user = {
+                    "username": row[0],
+                    "firstname": row[1],
+                    "lastname": row[2],
+                    "street": row[3],
+                    "postalcode": row[4],
+                    "city": row[5],
+                    "phone": row[6],
+                    "email": row[7],
+                    "ou": row[8],
+                }
+                users.append(user)
+
+            cursor.close()
+
+            return users
+        
+        except Exception as e:
+            QMessageBox.critical(self, "Fehler", f"Fehler beim der Transferdaten:\n{e}")
+            return []
+            
+
 
 def main():
     app = QApplication(sys.argv)
