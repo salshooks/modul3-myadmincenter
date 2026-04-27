@@ -10,7 +10,7 @@ import shutil #Datei kopieren
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import (
-    QApplication, QDialog, QFileDialog, QLineEdit, QMainWindow, QPushButton, QDockWidget, QToolBar,
+    QApplication, QDialog, QFileDialog, QLineEdit, QMainWindow, QPushButton, QDockWidget, QTextBrowser, QToolBar,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QMessageBox, QGridLayout, QLabel, QLineEdit, QComboBox, QTableWidget, QAbstractItemView
 )
 from datetime import datetime
@@ -91,6 +91,84 @@ class LoginDialog(QDialog):
         
         self.accept()
     
+
+# Fenster für Validierungs-Report
+# Окно для отчёта по ошибкам валидации
+class ImportReportWindow(QDialog):
+    def __init__(self, db_connection, parent=None):
+        super().__init__(parent)
+          # Datenbankverbindung speichern
+        # Сохраняем подключение к базе данных
+        self.db_connection = db_connection
+        # Fenstertitel setzen
+        # Устанавливаем заголовок окна
+        self.setWindowTitle("Validierungs-Report")
+        # Fenstergröße setzen
+        # Устанавливаем размер окна
+        self.resize(900, 500)
+        # Layout erstellen
+        # Создаём layout
+        layout = QVBoxLayout(self)
+
+        # Tabelle für Fehler erstellen
+        # Создаём таблицу для ошибок
+        self.table_errors = QTableWidget()
+
+        # Anzahl der Spalten setzen
+        # Устанавливаем количество колонок
+        self.table_errors.setColumnCount(6)
+
+        # Spaltenüberschriften setzen
+        # Устанавливаем названия колонок
+        self.table_errors.setHorizontalHeaderLabels([
+            "Zeit",
+            "Datei",
+            "Zeile",
+            "Feld",
+            "Wert",
+            "Grund"
+        ])
+
+        # Tabelle ins Layout einfügen
+        # Добавляем таблицу в окно
+        layout.addWidget(self.table_errors)
+        # Fehlerdaten laden
+        # Загружаем ошибки из базы
+        self.load_errors()
+
+    # Lädt Fehler aus der Tabelle import_errors
+    # Загружает ошибки из таблицы import_errors
+    def load_errors(self):
+
+        cursor =self.db_connection.cursor()
+         # Fehlerdaten aus DB holen
+        # Получаем ошибки из базы
+        cursor.execute("""
+            SELECT import_time, file_name, line_number, field_name, rejected_value, reason
+            FROM import_errors
+            ORDER BY id_pk DESC
+        """)
+
+        #загружаем все строки 
+        rows = cursor.fetchall()
+
+        # Anzahl der Zeilen setzen
+        # Устанавливаем количество строк
+        self.table_errors.setRowCount(len(rows))
+
+        # Tabelle füllen
+        # Заполняем таблицу данными
+        for row_index, row_data in enumerate(rows):
+            for col_index, value in enumerate(row_data):
+                self.table_errors.setItem(
+                    row_index,
+                    col_index,
+                    QTableWidgetItem(str(value))
+                )
+
+        # Cursor schließen
+        # Закрываем cursor
+        cursor.close()
         
 
 class MainWindow(QMainWindow):
@@ -184,8 +262,35 @@ class MainWindow(QMainWindow):
 
 
         central_layout.addWidget(self.table_interessenten)
+        # Hilfe-Dock vorbereiten
+        self.help_dock = QDockWidget("Hilfe", self)
+        self.help_dock.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea |
+            Qt.DockWidgetArea.RightDockWidgetArea |
+            Qt.DockWidgetArea.BottomDockWidgetArea
+        )
+
+        self.help_browser = QTextBrowser()
+        self.help_browser.setReadOnly(True)
+        self.load_help_text()
+        self.help_dock.setWidget(self.help_browser)
+
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.help_dock)
         self.resize(1000, 600)
         self.show()
+
+    def load_help_text(self):
+        try:
+            with open("help.html", "r", encoding="utf-8") as file:
+                html = file.read()
+        
+            self.help_browser.setHtml(html)
+
+        except:
+            self.help_browser.setHtml("<h2>Hilfe</h2><p>Help-Datei nicht gefunden.</p>")
+
+
+
 
     # --- Platzhalter für die Teilnehmer-Logik ---
 
@@ -202,6 +307,7 @@ class MainWindow(QMainWindow):
         elif command_id == 21: self.editaduser()  # Menüpunkt: ausgewählten Benutzer bearbeiten
         elif command_id == 22: self.delete_ad_user() # Menüpunkt: ausgewählten Benutzer löschen
         elif command_id ==23: self.deactivate_ad_user() # Menüpunkt: ausgewählten AD-Benutzer deaktivieren
+        elif command_id == 24: self.show_import_report() # Menüpunkt: Validierungs-Report
         elif command_id == 14: self.db_logout() # Menüpunkt: Logout (Verbindung schließen)
 
     def db_logout(self): #Diese Methode schließt die Verbindung zur Datenbank und setzt self.db_connection auf None zurück.
@@ -279,16 +385,16 @@ class MainWindow(QMainWindow):
 
     # Eine CSV-Zeile auslesen und die Felder für weitere Verarbeitung vorbereiten   
     def process_csv_row(self, row, line_number, source_file):
-        firstname = row.get("firstname", "").strip()
-        lastname = row.get("lastname", "").strip()
-        phone = row.get("phone", "").strip()
-        ou = row.get("ou", "").strip()
-        street = row.get("street", "").strip()
-        city = row.get("city", "").strip()
-        city_code = row.get("city_code", "").strip()
-        postalcode = row.get("postalcode", "").strip()
-        kurs = row.get("kurs", "").strip()
-        status_id_fk = row.get("status_id_fk", "").strip()
+        firstname = (row.get("firstname") or "").strip()
+        lastname = (row.get("lastname") or "").strip()
+        phone = (row.get("phone") or "").strip()
+        ou = (row.get("ou") or "").strip()
+        street = (row.get("street") or "").strip()
+        city = (row.get("city") or "").strip()
+        city_code = (row.get("city_code") or "").strip()
+        postalcode = (row.get("postalcode") or "").strip()
+        kurs = (row.get("kurs") or "").strip()
+        status_id_fk = (row.get("status_id_fk") or "").strip()
 
         return {
             "firstname": firstname,
@@ -304,6 +410,56 @@ class MainWindow(QMainWindow):
             "line_number": line_number,
             "source_file": source_file
         }
+    
+    def validate_row(self, row):
+        errors = [] #создаём пустой список ошибок.
+        
+        if row["firstname"] == "": #проверяем, пустое ли поле firstname.
+            errors.append({ #если ошибка есть, добавляем её в список.
+                "field": "firstname",
+                "value": row["firstname"],
+                "reason": "Vorname fehlt"
+            })
+
+        if row["lastname"] == "":
+            errors.append({
+                "field": "lastname",
+                 "value": row["lastname"],
+                 "reason": "Nachname fehlt"
+            })
+        
+        return errors #возвращаем список ошибок назад в CSV-Import.
+    
+      # Speichert einen Importfehler in der Datenbank
+    # Сохраняет ошибку импорта в базу данных
+    def log_import_error(self, source_file, line_number, error):
+
+        # Cursor für SQL-Abfrage erstellen
+        # Создаем cursor для SQL-запроса
+        cursor = self.db_connection.cursor()
+
+        # Fehler in Tabelle import_errors speichern
+        # Сохраняем ошибку в таблицу import_errors
+        cursor.execute("""
+            INSERT INTO import_errors
+            (import_time, file_name, line_number, field_name, rejected_value, reason)
+            VALUES (NOW(), %s, %s, %s, %s, %s)
+        """, (
+            source_file,         # Dateiname / имя файла
+            line_number,         # Zeilennummer / номер строки
+            error["field"],      # Feldname / имя поля
+            error["value"],      # Falscher Wert / неправильное значение
+            error["reason"]      # Fehlergrund / причина ошибки
+        ))
+
+        # Änderungen speichern
+        # Сохраняем изменения
+        self.db_connection.commit()
+
+        # Cursor schließen
+        # Закрываем cursor
+        cursor.close()
+
     # Username aus Vorname und Nachname generieren (Format: firstname.lastname)
     def generate_username(self,firstname, lastname):
         # Leerzeichen entfernen und alles in Kleinbuchstaben umwandeln
@@ -425,8 +581,12 @@ class MainWindow(QMainWindow):
         try:
             with open(file_path, newline='', encoding='utf-8-sig') as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=";")
+                
+                print("CSV-Spalten:", reader.fieldnames)
 
                 rows = list(reader)  
+              
+                
 
                 
 
@@ -434,9 +594,23 @@ class MainWindow(QMainWindow):
                 #Zähler für neue und bereits vorhandene Datensätze vorbereiten
                 new_count = 0
                 existing_count = 0
+                rejected_count = 0 # Abgelehnte Zeilen zählen / Отклонённые строки считать
 
                 for index, row in enumerate(rows, start=1):
                     processed_row = self.process_csv_row(row, index, file_path)
+                    errors = self.validate_row(processed_row) #проверяем строку.
+                    
+
+                    if errors: #если список ошибок не пустой.
+                        print("Fehler in Zeile:", index, errors) #показываем ошибку в терминале.
+                        
+                        
+                        for error in errors:
+                           self.log_import_error(file_path, index, error) # каждую отдельную ошибку сохранить в базу данных
+
+                        rejected_count += 1 # Eine fehlerhafte Zeile zählen / Посчитать одну ошибочную строку
+                        continue #пропускаем эту CSV-строку и переходим к следующей.
+
                     # Username für jeden Datensatz generieren
                     username = self.generate_username(
                         processed_row["firstname"],
@@ -475,7 +649,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(
                     self,
                     "Import erfolgreich",
-                    f"Neu importiert: {new_count}\nAktualisiert: {existing_count} "
+                    f"Neu importiert: {new_count}\nAktualisiert: {existing_count}\nAbgelehnt: {rejected_count}"
                 )
 
 
@@ -585,6 +759,21 @@ class MainWindow(QMainWindow):
 
             except Exception as e:
                 QMessageBox.critical(self, "Fehler", str(e))
+
+    # Öffnet das Fenster mit dem Validierungs-Report
+    # Открывает окно с отчётом ошибок валидации
+    def show_import_report(self):
+        # Prüfen, ob Datenbankverbindung besteht
+        # Проверяем, есть ли подключение к базе данных
+        if self.db_connection is None:
+            QMessageBox.warning(self, "Fehler", "Bitte zuerst einloggen")
+            return
+        # Report-Fenster erstellen
+        # Создаём окно отчёта
+        self.report_window = ImportReportWindow(self.db_connection, self)
+        # Report-Fenster anzeigen
+        # Показываем окно отчёта
+        self.report_window.show()
 
     def transfer_to_ad(self):
         """Startet den Transfer zur AD"""
