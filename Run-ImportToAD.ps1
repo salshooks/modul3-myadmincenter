@@ -1,12 +1,9 @@
-# Pfade festlegen / Указываем пути
-$scriptPath = "C:\Users\pth\Documents\k22\Yaroslav\Yaroslav_22.04_modul3-myadmincenter\ImportToAD.ps1"
-$importFolder = "C:\Users\pth\Documents\k22\Yaroslav\Yaroslav_22.04_modul3-myadmincenter\network_test"
+# Pfade festlegen
+$scriptPath = ".\ImportToAD.ps1"
+$importFolder = ".\network_test"
 
-# Passwort sicher eingeben / Безопасный ввод пароля
+# Passwort sicher eingeben
 $password = Read-Host "Passwort eingeben" -AsSecureString
 
 # Import-Skript starten
-& $scriptPath -ImportFolder $importFolder -Password $password
-
-# Import-Skript starten / Запускаем импорт-скрипт
 & $scriptPath -ImportFolder $importFolder -Password $password
