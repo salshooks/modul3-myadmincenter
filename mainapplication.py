@@ -19,16 +19,17 @@ from editaduser_TN import EditADUserWindow
 
 
 #Einfügen Login FEnster
-class LoginDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+#Der Benutzer wählt „Anmelden“, woraufhin das Programm eine Verbindung zum Anmeldedialog herstellt.
+class LoginDialog(QDialog): #этот блок для входа в систему и подключению базе данных
+    def __init__(self, parent=None):  #Когда пользователь нажимает "Einloggen", программа создаёт LoginDialog.
+        super().__init__(parent)      #После создания сразу выполняется __init__.
     
         self.setWindowTitle("Login")
         self.setModal(True)
     
     
-        layout = QGridLayout()
-        self.setLayout(layout)
+        layout = QGridLayout() #Окно называется Login.
+        self.setLayout(layout) #Пока оно открыто, пользователь не может работать с главным окном.
     
         #Username
         self.label_user = QLabel("Username")
@@ -37,7 +38,7 @@ class LoginDialog(QDialog):
         #Password
         self.label_pass = QLabel("Password:")
         self.input_pass = QLineEdit()
-        self.input_pass.setEchoMode(QLineEdit.EchoMode.Password)
+        self.input_pass.setEchoMode(QLineEdit.EchoMode.Password) #Она скрывает пароль точками/звёздочками.
     
         #Host
         self.label_host = QLabel("Host:")
@@ -71,11 +72,12 @@ class LoginDialog(QDialog):
         layout.addWidget(self.btn_cancel, 4, 1)
     
         # Buttons logic
-        self.btn_ok.clicked.connect(self.handle_login)
-        self.btn_cancel.clicked.connect(self.reject)
+        self.btn_ok.clicked.connect(self.handle_login) #Если нажали OK self.handle_login
+        self.btn_cancel.clicked.connect(self.reject) #Если нажали Abbrechen: self.reject
 
     #Liest Login-Daten aus den Eingabefeldern und schließt das Fenster mit OK.
-    def handle_login(self):
+    #Nach der Bestätigung mit OK wird handle_login() aufgerufen, liest die Daten, gibt eine Sprachausgabe aus und schließt das Fenster.
+    def handle_login(self): # после ОК запускается handle_login() считать данные>speichern>закрыть окно
         host = self.input_host.text()
         database = self.input_db.text()
         username = self.input_user.text()
@@ -89,13 +91,14 @@ class LoginDialog(QDialog):
             "password": password,
         }
         
-        self.accept()
+        self.accept() #закрыть окно как успешный вход
     
 
 # Fenster für Validierungs-Report
-# Окно для отчёта по ошибкам валидации
-class ImportReportWindow(QDialog):
-    def __init__(self, db_connection, parent=None):
+#Falls beim CSV-Import fehlerhafte Zeilen aufgetreten sind, werden diese in der Datenbank gespeichert und in diesem Fenster angezeigt.
+# если при CSV импорте были неправильные строки, они сохраняются в базу, а это окно показывает эти ошибки
+class ImportReportWindow(QDialog): # окно для просмотра ошибок
+    def __init__(self, db_connection, parent=None): #Получает подключение к базе- Чтобы окно могло сделать SQL-запрос и загрузить ошибки.
         super().__init__(parent)
           # Datenbankverbindung speichern
         # Сохраняем подключение к базе данных
@@ -108,11 +111,13 @@ class ImportReportWindow(QDialog):
         self.resize(900, 500)
         # Layout erstellen
         # Создаём layout
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self) #вертикальное расположение элементов.
+        #vertikale Anordnung der Elemente.
 
         # Tabelle für Fehler erstellen
         # Создаём таблицу для ошибок
-        self.table_errors = QTableWidget()
+        self.table_errors = QTableWidget() #Она нужна, чтобы показать ошибки в виде строк и колонок.
+        #Es ist erforderlich, Fehler in Form von Zeilen und Spalten anzuzeigen.
 
         # Anzahl der Spalten setzen
         # Устанавливаем количество колонок
@@ -131,13 +136,15 @@ class ImportReportWindow(QDialog):
 
         # Tabelle ins Layout einfügen
         # Добавляем таблицу в окно
-        layout.addWidget(self.table_errors)
+        layout.addWidget(self.table_errors) #Без этой строки таблица была бы создана в памяти, но не отображалась бы в окне.
+        #Ohne diese Zeile würde die Tabelle zwar im Speicher erstellt, aber nicht im Fenster angezeigt.
+        
         # Fehlerdaten laden
         # Загружаем ошибки из базы
         self.load_errors()
 
-    # Lädt Fehler aus der Tabelle import_errors
-    # Загружает ошибки из таблицы import_errors
+    # эта функциязагружает ошибки из базы данных и показывает их в таблице окна Validierungs-Report
+    #Diese Funktion lädt Fehler aus der Datenbank und zeigt sie in der Tabelle des Validierungsberichtsfensters an.
     def load_errors(self):
 
         cursor =self.db_connection.cursor()
@@ -147,7 +154,8 @@ class ImportReportWindow(QDialog):
             SELECT import_time, file_name, line_number, field_name, rejected_value, reason
             FROM import_errors
             ORDER BY id_pk DESC
-        """)
+        """) #запрос к Мариа ДБ, возьми данные из таблицы import_errors (import_time)
+        #Anfrage an MariaDB, Daten aus der Tabelle import_errors (import_time) abrufen
 
         #загружаем все строки 
         rows = cursor.fetchall()
@@ -170,13 +178,13 @@ class ImportReportWindow(QDialog):
         # Закрываем cursor
         cursor.close()
         
-
-class MainWindow(QMainWindow):
+#Dies ist das Hauptfenster der Anwendung „myAdmin Center“.
+class MainWindow(QMainWindow): #Это главное окно приложения myAdmin Center.
 
     def __init__(self):
-        super().__init__()
+        super().__init__() #запускает базовую логику QMainWindow.
         # Zentrale Konfiguration für Menüs und Toolbars 
-        self.mainmenue = {1: "&Datei", 2: "&Active Directory", 4:"&Hilfe"}
+        self.mainmenue = {1: "&Datei", 2: "&Active Directory", 4:"&Hilfe"} #Главное меню
         self.menueoptions = {
             11: "Import von CSV", 
             12: "Transfer nach AD",  
@@ -191,33 +199,46 @@ class MainWindow(QMainWindow):
             41: "&Über", 
             42: "&Hilfe"
         }
+        #К кнопке приклеивается ID
         self.toolbarbuttons = {13: "Einloggen", 11: "Import von CSV", 12: "Transfer nach AD", 0: "separator", 21: "Bearbeite AD-User", 42: "&Hilfe"}
         
         self.db_connection = None # Initial keine Verbindung 
         self.initUI()
         
-    def initUI(self):
-        self.setWindowTitle("myAdmin Center")
-        self.setWindowIcon(QIcon(".\\images\\logo-zm.png"))
+    #initUI() — это функция, которая строит всё главное окно программы.   
+    # #initUI() ist eine Funktion, die das gesamte Hauptfenster des Programms erstellt. 
+    def initUI(self): 
+        self.setWindowTitle("myAdmin Center") #название окна: myAdmin Center
+        self.setWindowIcon(QIcon(".\\images\\logo-zm.png")) #иконку окна: images/logo-zm.png
         
         # Automatische Generierung der Menüleiste
-        menubar = self.menuBar()
-        for menu_id, menu_title in self.mainmenue.items():
-            menu = menubar.addMenu(menu_title)
-            for action_id, action_title in self.menueoptions.items():
-                if action_id == 0:
+        #topline Datei | Active Directory | Hilfe
+        menubar = self.menuBar() #верхняя строка Datei | Active Directory | Hilfe
+        #ruft diese Daten ab self.mainmenue = {1: "&Datei"...
+        for menu_id, menu_title in self.mainmenue.items(): #берет эти данные self.mainmenue = {1: "&Datei"...
+            # und erstellt das Menü Datei | Active Directory | Hilfe
+            menu = menubar.addMenu(menu_title)# и создает меню  Datei | Active Directory | Hilfe
+            # übernimmt alle Elemente aus dem Import von CSV usw.
+            for action_id, action_title in self.menueoptions.items(): # берет все пункты Import von CSV и так далее
+                if action_id == 0: #Если ID = 0, это не кнопка, а разделительная линия.
                     menu.addSeparator()
-                elif action_id // 10 == menu_id:
+                elif action_id // 10 == menu_id: #// 10 — это деление без остатка.
+                    #13 идёт в меню 1 → Datei
+                    #21 идёт в меню 2 → Active Directory
+                    #42 идёт в меню 4 → Hilfe
+                    #Так программа автоматически раскладывает пункты по меню.
+
+                    #Создаётся пункт меню.
                     action = QAction(action_title, self)
-                    action.setProperty("command", (action_id, action_title))
-                    action.triggered.connect(self.menue_clicked)
-                    menu.addAction(action)
+                    action.setProperty("command", (action_id, action_title)) #Программа запоминает: Einloggen = команда 13
+                    action.triggered.connect(self.menue_clicked)# Подключение клика
+                    menu.addAction(action) 
 
         # Toolbar Setup
-        toolbar = QToolBar("Hauptwerkzeugleiste")
+        toolbar = QToolBar("Hauptwerkzeugleiste") #Создаётся панель кнопок под меню.
         self.addToolBar(toolbar)
-        for command, caption in self.toolbarbuttons.items():
-            if command == 0:
+        for command, caption in self.toolbarbuttons.items(): #Добавление кнопок 13,11,12 те, которые сверху
+            if command == 0: #пишет вертикальную линию как разделитель
                 toolbar.addSeparator()
             else:
                 btn = QPushButton(caption)
@@ -228,12 +249,12 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Bereit - Bitte einloggen")
         
         # Zentrales Widget & Tabelle
-        central_widget = QWidget(self)
+        central_widget = QWidget(self) # центральная часть окна
         self.setCentralWidget(central_widget)
         central_layout = QVBoxLayout(central_widget)
 
         self.filter_input = QLineEdit()
-        self.filter_input.setPlaceholderText("Benutzer suchen...")
+        self.filter_input.setPlaceholderText("Benutzer suchen...") # подсказка 
 
         #Bei Texteingabe Tabelle filtern
         self.filter_input.textChanged.connect(self.filter_ad_users)
@@ -242,7 +263,7 @@ class MainWindow(QMainWindow):
 
 
         self.table_interessenten = QTableWidget()
-        self.table_interessenten.setColumnCount(5)
+        self.table_interessenten.setColumnCount(5) #Создаётся таблица с 5 колонками.
         self.table_interessenten.setHorizontalHeaderLabels([
             "ID",
             "Vorname",
@@ -251,52 +272,55 @@ class MainWindow(QMainWindow):
             "Status"
         ])
         # Zeilennummern (linke Spalte) ausblenden
-        self.table_interessenten.verticalHeader().setVisible(False)
+        self.table_interessenten.verticalHeader().setVisible(False) #Скрывает номера строк слева.
         # Auswahlverhalten gemäß US 3.1 
-        self.table_interessenten.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.table_interessenten.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
-        self.table_interessenten.doubleClicked.connect(self.editaduser) 
+        self.table_interessenten.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows) #Выбирается вся строка.
+        self.table_interessenten.setSelectionMode(QTableWidget.SelectionMode.SingleSelection) #Можно выбрать только одну строку
+        self.table_interessenten.doubleClicked.connect(self.editaduser)  #Двойной клик открывает редактирование пользователя.
         self.table_interessenten.horizontalHeader().setStretchLastSection(True) # Letzte Spalte der Tabelle automatisch strecken
         self.table_interessenten.resizeColumnsToContents() # Spaltenbreite automatisch an Inhalt anpassen
 
 
 
-        central_layout.addWidget(self.table_interessenten)
+        central_layout.addWidget(self.table_interessenten) #Без этой строки таблица не появилась бы в интерфейсе.
         # Hilfe-Dock vorbereiten
-        self.help_dock = QDockWidget("Hilfe", self)
-        self.help_dock.setAllowedAreas(
+        self.help_dock = QDockWidget("Hilfe", self) #Окно помощи
+        self.help_dock.setAllowedAreas( #Панель можно ставить:слева- справа- снизу
             Qt.DockWidgetArea.LeftDockWidgetArea |
             Qt.DockWidgetArea.RightDockWidgetArea |
             Qt.DockWidgetArea.BottomDockWidgetArea
         )
 
+        #Создаётся поле для HTML-текста помощи.
         self.help_browser = QTextBrowser()
         self.help_browser.setReadOnly(True)
         self.load_help_text()
+        # Панель помощи появляется справа. 
         self.help_dock.setWidget(self.help_browser)
-
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.help_dock)
         self.resize(1000, 600)
         self.show()
 
-    def load_help_text(self):
-        try:
-            with open("help.html", "r", encoding="utf-8") as file:
-                html = file.read()
+    def load_help_text(self): # вызывается тут self.load_help_text()
+        try: #если получается  войи, то ок, если нет, то в except
+            with open("help.html", "r", encoding="utf-8") as file:#открыть файл
+                                                                  #после чтения автоматически закрыть
+                html = file.read() #чтение содержимого
         
-            self.help_browser.setHtml(html)
+            self.help_browser.setHtml(html) #правая панель показывает текст как веб-страницу
 
         except:
             self.help_browser.setHtml("<h2>Hilfe</h2><p>Help-Datei nicht gefunden.</p>")
+            #чтобы программа не упала, если help.html отсутствует
 
 
 
 
     # --- Platzhalter für die Teilnehmer-Logik ---
 
-    def menue_clicked(self):
+    def menue_clicked(self): #Это центральная функция обработки кликов.
         """Zentraler Slot für alle Aktionen. Teilnehmer müssen das match-case implementieren."""
-        sender = self.sender()
+        sender = self.sender() #какой объект меня вызвал?
         command_id = sender.property("command")[0]
         
         
@@ -322,8 +346,8 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, "Info", "Ausgeloggt")
 
 #Einlogen zeigt
-    def db_login(self):
-        dialog = LoginDialog(self)
+    def db_login(self): #Это функция входа в базу данных.
+        dialog = LoginDialog(self) 
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             login_data = dialog.login_data
@@ -340,41 +364,49 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "Erfolg", "Verbindung erfolgreich")
                 self.load_ad_users() #Der Benutzer meldet sich an und die Tabelle wird automatisch ausgefüllt.
 
-            except Exception as e:
+            except Exception as e: #если логин неправильный / база недоступна:
                 QMessageBox.critical(self, "Fehler", str(e))
 
         else:
-            print("Login abgebrochen")
+            print("Login abgebrochen") #Если нажали Abbrechen:
 
 
-    def load_ad_users(self):
+    def load_ad_users(self): #После логина вызывается
+        #мы открыли канал общения с БД
         cursor = self.db_connection.cursor() #Es wird ein "Werkzeug" zur Arbeit mit der Datenbank erstellt.
+        #возьми все данные из view_aduser_details #view_aduser_details объединяет их в один удобный вид.
+
         cursor.execute("SELECT * FROM view_aduser_details") #Es wird eine Anfrage an die Datenbank gesendet.
+        #забрать все строки результата
         rows = cursor.fetchall() #Alle Daten aus der Datenbank in Python abrufen
 
         headers = [description[0] for description in cursor.description] #Ich verwende Spaltennamen (zum Beispiel: Name, E-Mail usw.).
 
+        #таблица получает 5 колонок.
         self.table_interessenten.setColumnCount(len(headers)) #wie viele Spalten
+        #ставит заголовки: id | vorname | username | email | status
         self.table_interessenten.setHorizontalHeaderLabels(headers) #Spaltennamen (Überschriften).
+        #Количество строк
         self.table_interessenten.setRowCount(len(rows)) #Wie viele Zeilen wird es geben
  
-        for row_index, row_data in enumerate(rows): #jede Zeile aus der Datenbank.
+        for row_index, row_data in enumerate(rows): #jede Zeile aus der Datenbank. 0>(1, Max, max.stermann)
             for col_index, value in enumerate(row_data): #für jede Zelle innerhalb der Zeile.
                 self.table_interessenten.setItem(
                     row_index,
                     col_index,
                     QTableWidgetItem(str(value)) #Wert in eine bestimmte Tabellenzelle einfügen.
                 )
-        self.table_interessenten.resizeColumnsToContents()
+        self.table_interessenten.resizeColumnsToContents() #ширина колонок подстраивается под текст автоматически.
         cursor.close()
-
-    def filter_ad_users(self):
-        filter_text = self.filter_input.text().lower().strip()
+    #self.filter_input = QLineEdit() und self.filter_input.textChanged.connect(self.filter_ad_users)
+    def filter_ad_users(self): #эта функция связанн с поиском пользователя  по поиску
+        filter_text = self.filter_input.text().lower().strip() #для одинакового результата при 
+        #разном стиле написания имени МАКС, макс, МаКс...
         
-        for row in range(self.table_interessenten.rowCount()):
+        for row in range(self.table_interessenten.rowCount()): # проверка каждого пользователя
             row_matches = False
 
-            for col in range(self.table_interessenten.columnCount()):
+            for col in range(self.table_interessenten.columnCount()): #например 
                 item = self.table_interessenten.item(row, col)
                 if item is not  None and filter_text in item.text().lower():
                     row_matches = True
@@ -384,7 +416,8 @@ class MainWindow(QMainWindow):
 
 
     # Eine CSV-Zeile auslesen und die Felder für weitere Verarbeitung vorbereiten   
-    def process_csv_row(self, row, line_number, source_file):
+    #Она очищает данные и приводит их к нормальному виду.
+    def process_csv_row(self, row, line_number, source_file): #получает  row, line_number, source_file
         firstname = (row.get("firstname") or "").strip()
         lastname = (row.get("lastname") or "").strip()
         phone = (row.get("phone") or "").strip()
@@ -408,10 +441,10 @@ class MainWindow(QMainWindow):
             "kurs": kurs,
             "status_id_fk": status_id_fk,
             "line_number": line_number,
-            "source_file": source_file
+            "source_file": source_file #ошибка в файле kunden.csv
         }
     
-    def validate_row(self, row):
+    def validate_row(self, row): #Метод `validate_row` проверяет наличие обязательных полей в строке CSV-файла.
         errors = [] #создаём пустой список ошибок.
         
         if row["firstname"] == "": #проверяем, пустое ли поле firstname.
@@ -436,12 +469,14 @@ class MainWindow(QMainWindow):
 
         # Cursor für SQL-Abfrage erstellen
         # Создаем cursor для SQL-запроса
-        cursor = self.db_connection.cursor()
+        cursor = self.db_connection.cursor() #SQL-инструмент, через него будем писать в MariaDB
 
         # Fehler in Tabelle import_errors speichern
         # Сохраняем ошибку в таблицу import_errors
+        #вставить новую запись в таблицу import_errors
+        #NOW() = текущее время базы.
         cursor.execute("""
-            INSERT INTO import_errors
+            INSERT INTO import_errors 
             (import_time, file_name, line_number, field_name, rejected_value, reason)
             VALUES (NOW(), %s, %s, %s, %s, %s)
         """, (
@@ -461,7 +496,7 @@ class MainWindow(QMainWindow):
         cursor.close()
 
     # Username aus Vorname und Nachname generieren (Format: firstname.lastname)
-    def generate_username(self,firstname, lastname):
+    def generate_username(self,firstname, lastname): #Она нужна, чтобы из имени и фамилии сделать логин пользователя.
         # Leerzeichen entfernen und alles in Kleinbuchstaben umwandeln
         firstname = firstname.strip().lower()
         lastname = lastname.strip().lower()
@@ -472,7 +507,7 @@ class MainWindow(QMainWindow):
         return username
         
      # E-Mail aus Vorname, Nachname und Standort generieren   
-    def generate_email(self, firstname, lastname, location):
+    def generate_email(self, firstname, lastname, location): #Это функция автоматического создания email
         # Leerzeichen entfernen und alles in Kleinbuchstaben umwandeln
         firstname = firstname.strip().lower()
         lastname = lastname.strip().lower()
@@ -488,11 +523,11 @@ class MainWindow(QMainWindow):
         return local_part + domain
     
     #Prüfen, ob Benutzer bereits in der Datenbank existiert
-    def user_exists(self, username):
+    def user_exists(self, username): #Это функция проверки: есть ли уже такой пользователь в MARIA DB
         # Datenbankabfrage zur Überprüfung, ob Username bereits existiert
         cursor = self.db_connection.cursor()
         cursor.execute(
-            "SELECT username FROM aduser WHERE username = %s",
+            "SELECT username FROM aduser WHERE username = %s", #найди такого пользователя
             (username,)
         )
         result = cursor.fetchone()
@@ -501,7 +536,7 @@ class MainWindow(QMainWindow):
         return result is not None
 
     # Neuen Benutzer in die Datenbank einfügen
-    def insert_user(self, data):
+    def insert_user(self, data): #Это функция сохранения нового пользователя в базу данных.
         cursor = self.db_connection.cursor()
         # SQL-Insert-Befehl zum Speichern eines neuen Benutzers
         cursor.execute("""
@@ -524,7 +559,7 @@ class MainWindow(QMainWindow):
         cursor.close()
 
         # Vorhandenen Benutzer in der Datenbank aktualisieren
-    def update_user(self, data):
+    def update_user(self, data): #Это функция обновления существующего пользователя в базе.
         cursor = self.db_connection.cursor()
 
         # SQL-Update-Befehl zum Aktualisieren eines vorhandenen Benutzers
@@ -558,16 +593,25 @@ class MainWindow(QMainWindow):
                            
 
 
-
+    #Она связывает сразу несколько методов
+    # process_csv_row()
+    #validate_row()
+    #log_import_error()
+    #generate_username()
+    #generate_email()
+    #user_exists()
+    #insert_user()
+    #update_user()
+    #load_ad_users()
     def csv_import_with_validation(self):
         """
         TODO: CSV einlesen, Daten validieren (US 7) und in DB schreiben.
         Fehlerhafte Zeilen müssen in die Tabelle 'import_errors'.
         """
-        if self.db_connection is None:
+        if self.db_connection is None: #Если нет подключения к базе, импорт запрещён Einloggen
             QMessageBox.warning(self, "Fehler", "Bitte zuerst einloggen")
             return
-            
+            #Пользователь выбирает CSV
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "CSV-Datei auswählen",
@@ -579,12 +623,12 @@ class MainWindow(QMainWindow):
             return
         # CSV-Datei einlesen und Zeilen als Dictionaries für weitere Verarbeitung speichern
         try:
-            with open(file_path, newline='', encoding='utf-8-sig') as csvfile:
-                reader = csv.DictReader(csvfile, delimiter=";")
+            with open(file_path, newline='', encoding='utf-8-sig') as csvfile: #utf-8-sig нужен, чтобы корректно читать CSV с немецкими
+                reader = csv.DictReader(csvfile, delimiter=";") #CSV читается построчно, и каждая строка становится словарём
                 
                 print("CSV-Spalten:", reader.fieldnames)
 
-                rows = list(reader)  
+                rows = list(reader)  #Все строки CSV сохраняются в список.
               
                 
 
@@ -597,8 +641,8 @@ class MainWindow(QMainWindow):
                 rejected_count = 0 # Abgelehnte Zeilen zählen / Отклонённые строки считать
 
                 for index, row in enumerate(rows, start=1):
-                    processed_row = self.process_csv_row(row, index, file_path)
-                    errors = self.validate_row(processed_row) #проверяем строку.
+                    processed_row = self.process_csv_row(row, index, file_path) #Здесь убираются пробелы
+                    errors = self.validate_row(processed_row) #проверяем строку. firstname/ lastname
                     
 
                     if errors: #если список ошибок не пустой.
@@ -612,13 +656,13 @@ class MainWindow(QMainWindow):
                         continue #пропускаем эту CSV-строку и переходим к следующей.
 
                     # Username für jeden Datensatz generieren
-                    username = self.generate_username(
+                    username = self.generate_username( #Если ошибок нет — генерируем username Max + Mustermann
                         processed_row["firstname"],
                         processed_row["lastname"]
                     )
 
                     # Username dem Datensatz hinzufügen
-                    processed_row["username"] = username
+                    processed_row["username"] = username # такой ключ "username": "max.mustermann"
 
                     # E-Mail für jeden Datensatz generieren
                     email = self.generate_email(
@@ -627,7 +671,7 @@ class MainWindow(QMainWindow):
                         processed_row["city"]
                     )
                     # E-Mail dem Datensatz hinzufügen
-                    processed_row["email"] = email
+                    processed_row["email"] = email #Теперь данные готовы для базы.
                     # Prüfen, ob der Benutzer bereits in der Datenbank existiert
                     if self.user_exists(processed_row["username"]):
                         processed_row["db_action"] = "update"
@@ -646,7 +690,7 @@ class MainWindow(QMainWindow):
                 print("Neue Datensätze:", new_count)
                 print("Vorhandene Datensätze:", existing_count)
                 self.load_ad_users()
-                QMessageBox.information(
+                QMessageBox.information( #Сообщение пользователю
                     self,
                     "Import erfolgreich",
                     f"Neu importiert: {new_count}\nAktualisiert: {existing_count}\nAbgelehnt: {rejected_count}"
@@ -654,13 +698,14 @@ class MainWindow(QMainWindow):
 
 
 
-        except Exception as e:
+        except Exception as e: #Если что-то сломалось, пользователь видит окно ошибки.
             QMessageBox.critical(self, "Fehler", str(e))
 
         print(file_path)
 
-
-    def editaduser(self): 
+    #Это функция открытия окна редактирования пользователя.
+    # Она только находит выбранного пользователя и открывает окно редактирования.
+    def editaduser(self):  #Это метод MainWindow
         """Ruft das Bearbeitungsfenster auf """ 
         selection = self.table_interessenten.selectedItems() # Ausgewählte Zeile ermitteln
         # Prüfen, ob eine Zeile ausgewählt ist
@@ -676,11 +721,12 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Fehler", "Bitte wählen Sie einen User aus!")
 
     #Löscht den ausgewählten Benutzer aus der Datenbank
+    #Это функция полного удаления пользователя из базы данных.
     def delete_ad_user(self):
         # Prüfen, ob ein Benutzer ausgewählt ist
-        selection = self.table_interessenten.selectedItems()
+        selection = self.table_interessenten.selectedItems() #Берём выделенную строку.
         if not selection:
-            QMessageBox.warning(self, "Fehler", "Bitte wöhlen Sie einen User aus!")
+            QMessageBox.warning(self, "Fehler", "Bitte wählen Sie einen User aus!")
             return
         
         #ID aus erster Spalte holen
@@ -688,7 +734,7 @@ class MainWindow(QMainWindow):
         userid = self.table_interessenten.item(row, 0).text()        
 
         #Sicherhetsabfrage
-        antwort = QMessageBox.question(
+        antwort = QMessageBox.question( #Benutzer wirklich löschen?
             self,
             "Bestätigung",
             "Benutzer wirklich löschen?",
@@ -702,8 +748,8 @@ class MainWindow(QMainWindow):
 
                 #WICHTIG: id_pk verwenden
                 cursor.execute(
-                    "DELETE FROM aduser WHERE id_pk = %s",
-                    (int(userid),)
+                    "DELETE FROM aduser WHERE id_pk = %s", #удалить пользователя с этим ID?
+                    (int(userid),) 
                 )
 
                 self.db_connection.commit()
@@ -719,10 +765,10 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Fehler", str(e))
 
 
-    def deactivate_ad_user(self):
+    def deactivate_ad_user(self): #Это функция деактивации пользователя.
         """Deaktiviert den ausgewöhlten Benutzer (Status ändern)."""
         #Prüfen, ob ein Benutzer ausgewählt ist
-        selection = self.table_interessenten.selectedItems()
+        selection = self.table_interessenten.selectedItems() #Берём выбранную строку.
         if not selection:
             QMessageBox.warning(self, "Fehler", "Bitte wählen Sie einen User aus!")
             return
@@ -731,7 +777,7 @@ class MainWindow(QMainWindow):
         userid = self.table_interessenten.item (row, 0).text()
 
         #Sicherheitsabfrage
-        antwort = QMessageBox.question(
+        antwort = QMessageBox.question( #показывает  Benutzer wirklich deaktivieren?
             self,
             "Bestätigung",
             "Benutzer wirklich deaktivieren?",
@@ -775,7 +821,7 @@ class MainWindow(QMainWindow):
         # Показываем окно отчёта
         self.report_window.show()
 
-    def transfer_to_ad(self):
+    def transfer_to_ad(self): # создает transfer_ad_20260427_115704.json
         """Startet den Transfer zur AD"""
         # Prüfen, ob Verbindung zur Datenbank besteht
         if self.db_connection is None:
@@ -820,8 +866,8 @@ class MainWindow(QMainWindow):
 
         
         
-
-    def get_all_ad_users_for_transfer(self):
+    #эта функция достаёт пользователей из базы и подготавливает их для JSON.
+    def get_all_ad_users_for_transfer(self): #Вот это мост между базой данных и JSON-файлом.
         """Ladt alle Benutzer für den AD-Transfer aus der DB"""
 
         try:
@@ -867,7 +913,7 @@ class MainWindow(QMainWindow):
             return []
             
 
-
+#Это точка запуска всей Python-программы.
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()

@@ -1,7 +1,9 @@
 # Parameter für Import-Ordner / Параметр для папки импорта
 param(
-    [string]$ImportFolder = "network_test",
-    #Passwort sicher eingeben / Ввод пароля безопасно
+    [Parameter(Mandatory=$true)]
+    [string]$ImportFolder,
+
+    # Passwort sicher eingeben / Ввод пароля безопасно
     [Parameter(Mandatory=$true)]
     [securestring]$Password
 )
@@ -35,22 +37,53 @@ foreach ($user in $transferData) {
     $login = $login -replace '\s+',''
     $login = $login -replace '[^a-z0-9\.\-]',''
     $login = $login.Substring(0, [Math]::Min(20, $login.Length))
+    # Feste Ziel-OU / Фиксированная OU для создания
+    $targetOU = "OU=OU,DC=m-zukunftsmotor,DC=local"
+
+    # Prüfen, ob Ziel-OU existiert / Проверяем, существует ли целевая OU
+    try {
+        $ouExists = Get-ADOrganizationalUnit -Identity $targetOU -ErrorAction Stop #попробовать найти OU в Active Directory
+    }
+    catch {
+        Write-Host "OU nicht gefunden, Benutzer wird abgelehnt:" $targetOU
+        continue
+    }   
     #Benutzer in AD suchen / Ищем пользователя в AD
     $adUser = Get-ADUser -Filter  "SamAccountName -eq '$login'" -ErrorAction SilentlyContinue
     #Prüfen, ob Benutzer existiert / Проверяем, существует ли пользователь
     if ($adUser) {
         Write-Host "User existiert:" $login
 
+        
+        # Benutzerdaten aktualisieren / Обновляем данные пользователя
         Set-ADUser `
             -Identity $login `
-            -EmailAddress $user.email
+            -EmailAddress $user.email `
+            -StreetAddress $user.street `
+            -PostalCode $user.postalcode `
+            -City $user.city `
+            -OfficePhone $user.phone
+        
+        #если поле ou в JSON не пустое — записать его в Department
+        # Department nur aktualisieren, wenn OU im JSON nicht leer ist / Department обновляем только если OU в JSON не пустая
+        if (-not [string]::IsNullOrWhiteSpace($user.ou)) {
+            Set-ADUser `
+                    -Identity $login `
+                    -Department $user.ou
+        }
+
+        # Prüfen, ob Benutzer in der richtigen OU liegt / Проверяем, находится ли пользователь в правильной OU
+        if ($adUser.DistinguishedName -notlike "*$targetOU") {
+            # Benutzer in die Ziel-OU verschieben / Перемещаем пользователя в целевую OU
+            Move-ADObject -Identity $adUser.DistinguishedName -TargetPath $targetOU #Move-ADObject перемещает AD-объект в целевую OU.
+            Write-Host "User wurde in die Ziel-OU verschoben:" $login
+        }
 
     }
     
     else {
-        Write-Host "User NICHT gefunden:" $login
-        #Ziel-OU festlegen/ Указываем OU для создания пользователя
-        $targetOU = "OU=OU,DC=m-zukunftsmotor,DC=local"
+        Write-Host "User NICHT gefunden:" $login #если пользователя нет в AD — дальше будет New-ADUser
+        #Если пользователя нет в AD, скрипт создаёт нового пользователя с данными из JSON, помещает его в нужную OU, задаёт стартовый пароль, включает аккаунт и требует смену пароля при первом входе.
         try{ 
         #Benutzer erstellen / Создаём пользователя
         New-ADUser `
@@ -60,6 +93,11 @@ foreach ($user in $transferData) {
             -SamAccountName $login `
             -UserPrincipalName "$($login)@m-zukunftsmotor.local" `
             -EmailAddress $user.email `
+            -StreetAddress $user.street `
+            -PostalCode $user.postalcode `
+            -City $user.city `
+            -OfficePhone $user.phone `
+            -Department $user.ou `
             -Path $targetOU `
             -AccountPassword $Password `
             -Enabled $true `
